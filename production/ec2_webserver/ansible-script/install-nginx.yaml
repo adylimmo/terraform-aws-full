@@ -1,0 +1,69 @@
+---
+- name: Install and Configure Nginx with SSL for subdomain
+  hosts: localhost
+  become: yes
+
+  vars:
+    domain: "nginx.anakdevops.online"
+
+  tasks:
+    - name: Update and install required packages
+      apt:
+        name:
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+        state: present
+        update_cache: yes
+
+    - name: Ensure Nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Create Nginx configuration for the subdomain
+      copy:
+        dest: "/etc/nginx/sites-available/{{ domain }}"
+        content: |
+         server {
+              listen 80;
+              server_name {{ domain }};
+
+              root /var/www/html/ady;
+              index index.html index.htm;
+
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+          }
+      notify: restart nginx
+
+    - name: Enable the Nginx configuration
+      file:
+        src: "/etc/nginx/sites-available/{{ domain }}"
+        dest: "/etc/nginx/sites-enabled/{{ domain }}"
+        state: link
+
+    - name: Remove default Nginx configuration
+      file:
+        path: "/etc/nginx/sites-enabled/default"
+        state: absent
+      notify: restart nginx
+
+    - name: Obtain SSL certificate for the subdomain
+      command: |
+        certbot --nginx -d {{ domain }} --non-interactive --agree-tos -m admin@{{ domain }}
+      register: certbot_result
+      changed_when: "certbot_result.rc == 0"
+
+    - name: Ensure SSL certificate is successfully generated
+      fail:
+        msg: "Failed to generate SSL certificate for {{ domain }}."
+      when: certbot_result.rc != 0
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
