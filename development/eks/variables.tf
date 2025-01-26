@@ -11,8 +11,3 @@ variable "secret_key" {
 variable "region" {
   description = "AWS region"
 }
-variable "state_path" {
-  description = "Path ke terraform.tfstate"
-  type        = string
-  default     = "../security_group_public/terraform.tfstate"
-}

@@ -53,7 +53,7 @@
 
     - name: Obtain SSL certificate for the subdomain
       command: |
-        certbot --nginx -d {{ domain }} --non-interactive --agree-tos -m admin@{{ domain }}
+        certbot --nginx -d {{ domain }} --non-interactive --agree-tos -m ady.limmo@gmail.com
       register: certbot_result
       changed_when: "certbot_result.rc == 0"
 

@@ -31,7 +31,6 @@ data "terraform_remote_state" "subnets" {
 }
 
 resource "aws_instance" "ec2_anakdevops_cicd" {
-  count                  = 1
   ami                    = "ami-0497a974f8d5dcef8"
   instance_type          = "t2.micro"
   key_name               = data.terraform_remote_state.security_groups.outputs.key_pair_id
@@ -43,6 +42,6 @@ resource "aws_instance" "ec2_anakdevops_cicd" {
   }
 
   tags = {
-    Name = "webserver_private_dev-${count.index}"
+    Name = "webserver_public_dev"
   }
 }
